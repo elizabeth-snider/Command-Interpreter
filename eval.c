@@ -41,7 +41,12 @@ static void infer_type(node_t *nptr) {
                 return;
             }
         }
-        nptr->type = nptr->children[0]->type;
+        if(nptr->tok == TOK_EQ || nptr->tok == TOK_LT || nptr->tok == TOK_GT || nptr->tok == TOK_AND ||
+        nptr->tok == TOK_OR){
+            nptr->type = BOOL_TYPE;
+        } else{
+            nptr->type = nptr->children[0]->type;
+        }
     } else{
         nptr->type = nptr->type;
     }
@@ -54,7 +59,7 @@ static void infer_type(node_t *nptr) {
  */
 
 static void infer_root(node_t *nptr) {
-    print_tree(nptr);
+    //print_tree(nptr);
     if (nptr == NULL) return;
     // check running status
     if (terminate || ignore_input) return;
@@ -103,22 +108,6 @@ static void eval_node(node_t *nptr) {
                     return;
                 }
                 nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival;
-            } else if(nptr->tok == TOK_LT){
-                int one = nptr->children[0]->val.ival;
-                int two = nptr->children[1]->val.ival;
-                if(one < two){
-                    nptr->val.bval = 1;
-                } else{
-                    nptr->val.bval = 0;
-                }
-            } else if(nptr->tok == TOK_GT){
-                int one = nptr->children[0]->val.ival;
-                int two = nptr->children[1]->val.ival;
-                if(one > two){
-                    nptr->val.bval = 1;
-                } else{
-                    nptr->val.bval = 0;
-                }
             } else if(nptr->tok == TOK_TIMES){
                 if(nptr->children[1]->type == STRING_TYPE){
                     handle_error(ERR_TYPE);
@@ -128,12 +117,6 @@ static void eval_node(node_t *nptr) {
             } else if(nptr->tok == TOK_BMINUS){
                 nptr->val.ival = nptr->children[0]->val.ival - nptr->children[1]->val.ival;
 
-            } else if(nptr->tok == TOK_EQ){
-                if(nptr->children[0]->val.ival == nptr->children[1]->val.ival){
-                    nptr->val.bval = 1;
-                } else{
-                    nptr->val.bval = 0;
-                }
             } else if(nptr->tok == TOK_UMINUS){
                 nptr->val.ival = (-1) * (nptr->children[0]->val.ival);
             } else if(nptr->tok == TOK_NOT){
@@ -141,14 +124,7 @@ static void eval_node(node_t *nptr) {
                 return;
             }
         } else if(nptr->type == STRING_TYPE){
-            if(nptr->tok == TOK_EQ){
-                int boo = strcmp(nptr->children[0]->val.sval, nptr->children[1]->val.sval);
-                if(boo == 0){
-                    nptr->val.bval = 1;
-                } else{
-                    nptr->val.bval = 0;
-                }
-            } else if(nptr->tok == TOK_UMINUS){
+            if(nptr->tok == TOK_UMINUS){
                 nptr->val.sval = strrev(nptr->children[0]->val.sval);
             } else if(nptr->tok == TOK_PLUS){ 
                 char *str = malloc(strlen(nptr->children[0]->val.sval) + strlen(nptr->children[1]->val.sval) + 1);
@@ -162,25 +138,60 @@ static void eval_node(node_t *nptr) {
                     strcat(str, nptr->children[0]->val.sval);
                 }
                 nptr->val.sval = str;
-            } else if(nptr->tok == TOK_LT){
-                int one = strlen(nptr->children[0]->val.sval);
-                int two = strlen(nptr->children[1]->val.sval);
-                if(one < two){
+            } 
+        } else if(nptr->type == BOOL_TYPE){
+            if(nptr->tok == TOK_EQ){
+                if(nptr->children[0]->type == STRING_TYPE){
+                    int boo = strcmp(nptr->children[0]->val.sval, nptr->children[1]->val.sval);
+                    if(boo == 0){
+                        nptr->val.bval = 1;
+                    } else{
+                        nptr->val.bval = 0;
+                    }
+                } else if(nptr->children[0]->type == INT_TYPE){
+                    if(nptr->children[0]->val.ival == nptr->children[1]->val.ival){
                     nptr->val.bval = 1;
-                } else{
+                    } else {
                     nptr->val.bval = 0;
+                    }
+                }
+            } else if(nptr->tok == TOK_LT){
+                if(nptr->children[0]->type == INT_TYPE){
+                    int one = nptr->children[0]->val.ival;
+                    int two = nptr->children[1]->val.ival;
+                    if(one < two){
+                        nptr->val.bval = 1;
+                    } else{
+                        nptr->val.bval = 0;
+                    }
+                } else if(nptr->children[0]->type == STRING_TYPE){
+                    int one = strlen(nptr->children[0]->val.sval);
+                    int two = strlen(nptr->children[1]->val.sval);
+                    if(one < two){
+                        nptr->val.bval = 1;
+                    } else{
+                        nptr->val.bval = 0;
+                    }
                 }
             } else if(nptr->tok == TOK_GT){
-                int one = strlen(nptr->children[0]->val.sval);
-                int two = strlen(nptr->children[1]->val.sval);
-                if(one > two){
-                    nptr->val.bval = 1;
-                } else{
-                    nptr->val.bval = 0;
+                if(nptr->children[0]->type == INT_TYPE){
+                    int one = nptr->children[0]->val.ival;
+                    int two = nptr->children[1]->val.ival;
+                    if(one > two){
+                        nptr->val.bval = 1;
+                    } else{
+                        nptr->val.bval = 0;
+                    }
+                } else if(nptr->children[0]->type == STRING_TYPE){
+                    int one = strlen(nptr->children[0]->val.sval);
+                    int two = strlen(nptr->children[1]->val.sval);
+                    if(one > two){
+                        nptr->val.bval = 1;
+                    } else{
+                        nptr->val.bval = 0;
+                    }
                 }
-            }
-        } else if(nptr->type == BOOL_TYPE){
-            if(nptr->tok == TOK_AND){
+            } else if(nptr->tok == TOK_AND){
                 if(nptr->children[0]->val.bval == true && nptr->children[1]->val.bval == true){
                     nptr->val.bval = 1;
                 } else{
