@@ -131,7 +131,8 @@ static node_t *build_exp(void) {
             advance_lexer();
             node->children[0] = build_exp();
             advance_lexer();
-            if(this_token->ttype == TOK_PLUS || this_token->ttype == TOK_TIMES ||
+            if(this_token->ttype == TOK_PLUS || this_token->ttype == TOK_BMINUS ||
+                this_token->ttype == TOK_TIMES ||
                 this_token->ttype == TOK_DIV || this_token->ttype == TOK_MOD ||
                 this_token->ttype == TOK_EQ || this_token->ttype == TOK_LT ||
                 this_token->ttype == TOK_GT || this_token->ttype == TOK_AND || 

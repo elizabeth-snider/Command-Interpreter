@@ -32,13 +32,6 @@ static void infer_type(node_t *nptr) {
             if(nptr->children[0]->type != nptr->children[1]->type && nptr->tok != TOK_TIMES){
                 handle_error(ERR_TYPE);
                 return;
-            } else if((nptr->tok == TOK_AND || nptr->tok == TOK_OR) && 
-                (nptr->children[0]->type != BOOL_TYPE || nptr->children[1]->type != BOOL_TYPE)){
-                handle_error(ERR_TYPE);
-                return;
-            } else if(nptr->children[0]->type == BOOL_TYPE && (nptr->tok != TOK_AND || nptr->tok != TOK_OR)){
-                handle_error(ERR_TYPE);
-                return;
             }
         }
         if(nptr->tok == TOK_EQ || nptr->tok == TOK_LT || nptr->tok == TOK_GT || nptr->tok == TOK_AND ||
@@ -98,13 +91,13 @@ static void eval_node(node_t *nptr) {
                 nptr->val.ival = nptr->children[0]->val.ival + nptr->children[1]->val.ival;
             } else if(nptr->tok == TOK_DIV){
                 if(nptr->children[1]->val.ival == 0){
-                    handle_error(ERR_EVAL);
+                    handle_error(ERR_TYPE);
                     return;
                 }
                 nptr->val.ival = nptr->children[0]->val.ival / nptr->children[1]->val.ival;
             } else if(nptr->tok == TOK_MOD){
                 if(nptr->children[1]->val.ival == 0){
-                    handle_error(ERR_TYPE);
+                    handle_error(ERR_EVAL);
                     return;
                 }
                 nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival;
@@ -116,7 +109,6 @@ static void eval_node(node_t *nptr) {
                 nptr->val.ival = nptr->children[0]->val.ival * nptr->children[1]->val.ival;
             } else if(nptr->tok == TOK_BMINUS){
                 nptr->val.ival = nptr->children[0]->val.ival - nptr->children[1]->val.ival;
-
             } else if(nptr->tok == TOK_UMINUS){
                 nptr->val.ival = (-1) * (nptr->children[0]->val.ival);
             } else if(nptr->tok == TOK_NOT){
@@ -192,13 +184,13 @@ static void eval_node(node_t *nptr) {
                     }
                 }
             } else if(nptr->tok == TOK_AND){
-                if(nptr->children[0]->val.bval == true && nptr->children[1]->val.bval == true){
+                if(nptr->children[0]->val.bval == 1 && nptr->children[1]->val.bval == 1){
                     nptr->val.bval = 1;
                 } else{
                     nptr->val.bval = 0;
                 }
             } else if(nptr->tok == TOK_OR){
-                if(nptr->children[0]->val.bval == true || nptr->children[1]->val.bval == true){
+                if(nptr->children[0]->val.bval == 1 || nptr->children[1]->val.bval == true){
                     nptr->val.bval = 1;
                 } else{
                     nptr->val.bval = 0;
