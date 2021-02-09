@@ -33,7 +33,7 @@ static void infer_type(node_t *nptr) {
                 handle_error(ERR_TYPE);
                 return;
             }
-        }
+        } 
         if(nptr->tok == TOK_EQ || nptr->tok == TOK_LT || nptr->tok == TOK_GT || nptr->tok == TOK_AND ||
         nptr->tok == TOK_OR){
             nptr->type = BOOL_TYPE;
@@ -91,7 +91,7 @@ static void eval_node(node_t *nptr) {
                 nptr->val.ival = nptr->children[0]->val.ival + nptr->children[1]->val.ival;
             } else if(nptr->tok == TOK_DIV){
                 if(nptr->children[1]->val.ival == 0){
-                    handle_error(ERR_TYPE);
+                    handle_error(ERR_EVAL);
                     return;
                 }
                 nptr->val.ival = nptr->children[0]->val.ival / nptr->children[1]->val.ival;
@@ -182,6 +182,9 @@ static void eval_node(node_t *nptr) {
                     } else{
                         nptr->val.bval = 0;
                     }
+                } else{
+                    handle_error(ERR_TYPE);
+                    return;
                 }
             } else if(nptr->tok == TOK_AND){
                 if(nptr->children[0]->val.bval == 1 && nptr->children[1]->val.bval == 1){
